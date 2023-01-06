@@ -1,8 +1,9 @@
-import smtplib, ssl
+import smtplib, ssl, os, imaplib, webbrowser, email
 from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.header import decode_header
 
 
 def enviar(asunto, directorio, destinatario_, html_archivo, parm):
@@ -84,3 +85,95 @@ def enviar(asunto, directorio, destinatario_, html_archivo, parm):
             
     except smtplib.SMTPAuthenticationError:
         return "correos o contraseñas equivocados."
+    
+    
+def leer_correo():
+    
+    #datos del correo
+    username = "baselocaldevcop@gmail.com"
+    password = "dyrpgevcgkxyhbar"
+    
+    #crear conexion 
+    imap = imaplib.IMAP4_SSL("imap.gmail.com")
+    
+    #iniciar sesion
+    imap.login(username, password)
+    status, mensaje = imap.select("INBOX")
+    
+    #cantidad total de mensajes
+    
+    mensaje = int(mensaje[0])
+    
+    N = 5 + int(mensaje/10)
+    
+    for i in range(mensaje, mensaje - N, -1):
+        
+        try:
+            
+            res, mensaje = imap.fetch(str(i), "(RFC822)")
+        except:
+            
+            break
+        
+        for respuesta in mensaje:
+            
+            if isinstance(respuesta, tuple):
+                
+                #obtener contenido
+                mensaje = email.message_from_bytes(respuesta[1])
+                
+                #decodificar el contenido
+                subject = decode_header(mensaje["Subject"])[0][0]
+                if isinstance(subject, bytes):
+                    #convertir a string
+                    subject = subject.decode()
+                    
+                #de donde viene el correo
+                from_ = mensaje.get("From")
+                data_ = mensaje.get("Date")
+                #print("Subject: " , subject )
+                #print("From: " , from_)
+                #print("Date: " , data_)
+                
+                #si el correo es html
+                if mensaje.is_multipart():
+                    
+                    #recorrer las partes del correo 
+                    for part in mensaje.walk():
+                        
+                        #extraer el contenido
+                        content_type = part.get_content_type()
+                        content_disposition = str(part.get("Content-Disposition"))
+                        
+                        try:
+                            
+                            #Cuerpo del mensaje
+                            body = part.get_payload(decode = True).decode()
+
+                        except:
+                            pass
+                        
+                        if content_type == "text/plain" and "attachment" not in content_disposition:
+                            
+                            #mostrar el cuerpo del correo
+                            texto_salida_plana = body
+                        
+                        elif "attachment" in content_disposition:
+                            
+                            #download attachment
+                            nombre_archivo = part.get_filename()
+                            if nombre_archivo:
+
+                                if subject == "Envio_csv":
+                                    if not os.path.isdir(subject):
+                                        
+                                        #crear una carpeta para el mensaje
+                                        os.mkdir(subject)
+                                
+                                    ruta_archivo = os.path.join(subject, nombre_archivo)
+                                    
+                                    #download attachment and save it
+                                    
+                                    open(ruta_archivo, "wb").write(part.get_payload(decode = True))
+                                else:
+                                    pass

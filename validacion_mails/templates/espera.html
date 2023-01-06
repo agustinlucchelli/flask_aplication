@@ -114,12 +114,11 @@
     </br>
     </br>
     </br>
-
+    {% if texto %}
       <div class="alert alert-primary alert-dismissible fade show" role="alert" id = "locss">
-        <strong>Mail enviado</strong> Para validar el correo ingrese al enlace del mail enviado.
+        <strong>Aviso</strong> {{texto}}
       </div>
-      
-
+    {% endif %}
 
   </main>
   <footer>
