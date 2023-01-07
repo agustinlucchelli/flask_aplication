@@ -39,6 +39,7 @@ def espera():
         globals()["clave"] = Fernet(key)
         globals()["mail"] = globals()["clave"].encrypt(mail.encode())
         globals()["mail_str"] = str(globals()["mail"])
+        globals()[mail] = 0
 
         html = render_template("correo.html", token = token, mail = globals()["mail"])
 
@@ -76,20 +77,30 @@ def confirmar(token, mail):
 
     if mail + "='"== globals()["mail_str"]:
         mail_ = [globals()["clave"].decrypt(globals()["mail"]).decode()]
+        
+        globals()[mail_[0]] += 1
+        
+        if globals()[mail_[0]] == 1:
 
-        mail_cripto = [cripto.encriptar(mail_[0])]
+            mail_cripto = [cripto.encriptar(mail_[0])]
 
-        with open("correo.csv", "a",newline = "\n") as csv_info:
+            with open("correo.csv", "a",newline = "\n") as csv_info:
 
-            escrito = csv.writer(csv_info, delimiter = ",", quotechar = "|", quoting = csv.QUOTE_MINIMAL)
-            escrito.writerow(mail_cripto)
+                escrito = csv.writer(csv_info, delimiter = ",", quotechar = "|", quoting = csv.QUOTE_MINIMAL)
+                escrito.writerow(mail_cripto)
 
-        print(crr.enviar("Envio_csv", "correo.csv", "baselocaldevcop@gmail.com", "templates/correo_csv.html", "-"))
+            print(crr.enviar("Envio_csv", "correo.csv", "baselocaldevcop@gmail.com", "templates/correo_csv.html", "-"))
 
-        texto = f"Mail confirmado con exito {mail_[0]}"
+            texto = f"Mail confirmado con exito {mail_[0]}"
+
+        else:
+            
+            mail_ = [globals()["clave"].decrypt(globals()["mail"]).decode()]
+            texto = f"Error al confirmar el Correo: {mail_[0]}"
+        
     else:
         mail_ = [globals()["clave"].decrypt(globals()["mail"]).decode()]
-        texto = f"Error al confirmar el Correo: {mail_}"
+        texto = f"Correo ya validado!!: {mail_[0]}"
 
     return render_template("confirmado.html", texto = texto)
 
