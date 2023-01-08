@@ -11,14 +11,14 @@ def enviar(asunto, directorio, destinatario_, html_archivo, parm):
 
         #pedir datos
 
-        username = "baselocaldevcop@gmail.com"
+        username = "mail"
 
         while "@" not in username or "." not in username:
             
             return "Error correo invalido"
 
 
-        password = "dyrpgevcgkxyhbar"
+        password = "password_api"
         destinatario = destinatario_
 
 
@@ -90,8 +90,8 @@ def enviar(asunto, directorio, destinatario_, html_archivo, parm):
 def leer_correo():
     
     #datos del correo
-    username = "baselocaldevcop@gmail.com"
-    password = "dyrpgevcgkxyhbar"
+    username = "mail"
+    password = "password_api"
     
     #crear conexion 
     imap = imaplib.IMAP4_SSL("imap.gmail.com")
